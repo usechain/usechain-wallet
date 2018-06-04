@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<style>
+			html,body {
+				background-color: #FFFFFF;
+			}
+			.title{
+				margin: 20px 15px 10px;
+				color: #6d6d72;
+				font-size: 15px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<!--<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">设置</h1>
+		</header>-->
+		<div class="mui-content">
+			<br />
+			<br />
+			<div>
+				<h4 style="text-align: center;color: #AAAAAA;">
+					我
+				</h4> 
+			</div>
+			<ul class="mui-table-view" style="margin-top: 25px;">
+				<li class="mui-table-view-cell">
+					<a id="about" class="mui-navigate-right">
+						我的 UST
+					</a>
+				</li>
+			</ul>
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell">
+					<a class="mui-navigate-right">
+						UseChain Website
+					</a>
+				</li>
+				<li class="mui-table-view-cell">
+					<a class="mui-navigate-right" id="update">
+						检查更新
+					</a>
+				</li>
+			</ul>
+			
+		</div>
+		</style>
+	</body>
+	<script src="../js/mui.min.js"></script>
+	<script>
+		mui.init({
+			swipeBack:false //启用右滑关闭功能
+		});
+		document.getElementById("about").addEventListener('tap',function () {
+			//获得主页面的webview
+			var main = plus.webview.currentWebview().parent();
+			//触发主页面的gohome事件
+			mui.fire(main,'gohome');
+		});
+		document.getElementById("update").addEventListener('tap', function() {
+			var server = "http://123.207.28.44/update"; //获取升级描述文件服务器地址
+			mui.getJSON(server, {
+				"appid": plus.runtime.appid,
+				"version": plus.runtime.version,
+				"imei": plus.device.imei
+			}, function(data) {
+				if (data.status) {
+					
+					plus.ui.confirm("A new version released, Update ?", function(i) {
+						if (0 == i.index) {
+							plus.runtime.openURL(data.url);
+							alert(data.url);
+						}
+					});
+				} else {
+					mui.toast('USECHAIN 已是最新版本~')
+				}
+			});
+		});
+	</script>
+</html>

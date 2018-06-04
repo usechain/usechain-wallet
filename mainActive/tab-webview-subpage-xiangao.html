@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<style>
+			html,body {
+				background-color: #FFFFFF;
+			}
+			.title{
+				margin: 20px 15px 10px;
+				color: #6d6d72;
+				font-size: 15px;
+			}
+			 .oa-contact-cell.mui-table .mui-table-cell {
+				padding: 11px 0;
+				vertical-align: middle;
+			}
+			
+			.oa-contact-cell {
+				position: relative;
+				margin: -11px 0;
+			}
+	
+			.oa-contact-avatar {
+				width: 75px;
+			}
+			.oa-contact-avatar img {
+				border-radius: 50%;
+			}
+			.oa-contact-content {
+				width: 100%;
+			}
+			.oa-contact-name {
+				margin-right: 20px;
+			}
+			.oa-contact-name, oa-contact-position {
+				float: left;
+			}
+			.mui-content img {
+				width: 100%;
+			}
+			.imgw{
+				position: relative;
+			}  
+			.words{
+				font-size: 12px;  
+	            letter-spacing: 1px;  
+	            position: absolute;  
+	            top:10%;  
+	            left: 10%;
+            }  
+            .img-icon {
+            	position: absolute; 
+	            top:35%;  
+	            left: 43%;
+	           	/*margin: 15% auto;*/
+	            width: 15%; 
+	            height: 15%;  
+            }
+		</style>
+	</head>
+
+	<body>
+		<div class="mui-content">
+			<!--静态图片-->
+			<div class="imgw">
+				<img id="header-img" src="../img/header_small.png" >
+				<!--<div class="words" style="color:#CCCCCC;">铸币</div>-->  
+				<div class="img-icon">
+					<img id="img1" src="../img/exchange.png" />
+				</div>	
+			</div>
+			<p style="margin: auto 10px auto 10px;">这是原生实现的的transparent bar（透明导航栏）演示页面；默认情况下标题栏透明， 当用户向下滚动时，标题栏逐渐由透明转变为不透明；当用户再次向上滚动时，标题栏又从不透明变为透明状态。
+			</p>
+			<p style="margin: 5px 15px 25px 15px;">
+				这是一种解决滚动条通顶问题的变通解决方案，该方案有如下优点：
+			</p>
+			
+			<!--<div>
+				<ul class="hm-description">
+					<li>相比双webview的方案，性能更高，动效更酷</li>
+					<li>相比H5版本的透明导航栏，使用原生渐变动画，也有更高的性能体验</li>
+				</ul>
+			</div>-->
+			
+		</div>
+	</body>
+	<script src="../js/mui.min.js"></script>
+	<script>
+		mui.init({
+			swipeBack:false //启用右滑关闭功能
+		});
+	</script>
+</html>

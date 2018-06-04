@@ -1,0 +1,35 @@
+{
+  "index.html": {
+    "resources": [
+      "mainActive/tab-webview-subpage-zichan.html",
+      "mainActive/tab-webview-subpage-wode.html"
+    ],
+    "refer": [
+      "mainActive/tab-webview-subpage-zichan.html",
+      "mainActive/tab-webview-subpage-xiangao.html",
+      "mainActive/initGenerateAccount.html",
+      "mainActive/tab-webview-subpage-wode.html",
+      "mainActive/tab-webview-subpage-zhuanzhang.html"
+    ]
+  },
+  "mainActive/tab-webview-subpage-zichan.html": {
+    "refer": [
+      "mainActive/tab-webview-subpage-zichan-genwallet.html",
+      "mainActive/wallet-dtail.html"
+    ]
+  },
+  "mainActive/tab-webview-subpage-zichan-genwallet.html": {
+    "refer": [
+      "mainActive/tab-webview-subpage-zichan.html",
+      "index.html"
+    ],
+    "resources": [
+      "mainActive/tab-webview-subpage-zichan.html"
+    ]
+  },
+  "mainActive/wallet-dtail.html": {
+    "refer": [
+      "mainActive/tab-webview-subpage-zichan.html"
+    ]
+  }
+}

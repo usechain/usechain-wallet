@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/wallet-browser.js"></script>
+		<script src="../js/ethereum.js"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<title></title>
+		<style>
+			html,body {
+				background-color: #FFFFFF;
+			}
+			.title{
+				margin: 20px 15px 10px;
+				color: #6d6d72;
+				font-size: 15px;
+			}
+		</style>
+	</head>
+	<body>
+		<!--<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">设置</h1>
+		</header>-->
+		<div class="mui-content">
+			<br />
+			<br />
+			<div>
+				<h4 style="text-align: center;color: #AAAAAA;" id="title">
+					
+				</h4> 
+			</div>
+			<ul class="mui-table-view" style="margin-top: 25px;">
+				<li class="mui-table-view-cell">
+					<a id="about" class="mui-navigate-right">
+						UST:<span id="ust_value"></span>
+					</a>
+				</li>
+			</ul>
+			<ul class="mui-table-view" style="margin-top: 25px;">
+				<li class="mui-table-view-cell">
+					<a id="about" class="mui-navigate-right">
+						USI:<span id="usi_value"></span>
+					</a>
+				</li>
+			</ul>
+			
+		</div>
+		</style>
+	</body>
+	<script>
+		init()
+		
+		
+		document.getElementById("title").innerHTML=name
+		mui.init({
+			beforeback:function(){
+				//alert();
+				history.go(-1)
+				return false;//return false时不再执行后退逻辑
+			}
+		})
+
+	function get(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+        var r = window.location.search.substr(1).match(reg); 
+        //alert(window.location.search.substr)
+        if (r != null) return unescape(r[2]); 
+        return null; 
+	}    
+	function init(){
+		var addr = get("addr");
+		web3.eth.getBalance(             
+	   		addr
+	    		, function(err, result){
+	                if(!err){
+	                mui("#ust_value")[0].innerHTML= web3.utils.fromWei(result,'ether');
+	                console.log((result));
+	                }
+	        });
+	        
+//	       var usi_balance = web3.eth.call({         
+//              from:addr,
+//              to:"0xf4690Fd64955aAb0d12bB9c7CC17b9Fc3F5a8dE0",
+//              data:"0x70a08231"+ "000000000000000000000000"+addr.substr(2)
+//          
+//          });
+//          mui("#usi_value")[0].innerHTML= web3.utils.fromWei(usi_balance,'ether');
+	}
+	</script>
+</html>

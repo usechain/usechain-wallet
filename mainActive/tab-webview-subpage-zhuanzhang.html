@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<script src="../js/mui.min.js"></script>
+    		<link href="../css/mui.min.css" rel="stylesheet"/>
+		<script src="../js/wallet-browser.js"></script>
+		<script src="../js/ethereum.js"></script>
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<style>
+			html,
+			body {
+				background-color: #FFFFFF;
+			}
+			.title {
+				padding: 20px 15px 10px;
+				color: #6d6d72;
+				font-size: 15px;
+				background-color: #fff;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="pullrefresh" class="mui-content mui-scroll-wrapper">
+			<div class="mui-scroll">
+				<br />
+				<br />
+				<div>
+					<h4 style="text-align: center;color: #AAAAAA;" id="balance">
+						UST 转账
+					</h4> 
+				</div>
+				
+				<form class="mui-input-group">
+					<br />
+					<div class="mui-input-row">
+						<label style="color: #AAAAAA;">选择钱包</label>
+						<select id="from">
+	                    </select>
+	                </div>
+	                <div class="mui-input-row">
+						<label style="color: #AAAAAA;">解锁密码</label>
+						<input type="text" class="mui-input-clear" id="unlock_pwd" value="123456">
+					</div>
+					<div class="mui-input-row">
+						<label style="color: #AAAAAA;">目的地址</label>
+						<input type="text" class="mui-input-clear" id="getReceiveAddress" value="0xcc73428bD9B2a5bbCd49289C1e1966D24b50433D">
+					</div>
+					<div class="mui-input-row">
+						<label style="color: #AAAAAA;">转账金额</label>
+						<input type="text" class="mui-input-clear" placeholder="" id="getSendValue" value="2"> 
+					</div>
+					<!--<div class="mui-input-row">
+						<label style="color: #AAAAAA;">旷工费用</label>
+						<input type="text" class="mui-input-clear" placeholder="" id="gasprice" value="2520">
+					</div>-->
+					<div class="mui-input-row mui-plus-visible">
+						<label style="color: #AAAAAA;">备注</label>
+						<input type="text" class="mui-input-clear" placeholder="" id="getComments">
+					</div>
+					
+				</form>
+				
+				<br />
+				<div class="mui-content">
+		    		<div class="mui-content-paddeds">
+						<button type="button" class="mui-btn mui-btn-blue" onclick="transferUST()">Transfer </button>
+					</div>
+				</div>
+				
+				<div class="mui-content">
+					<div class="mui-content-padded">
+						<br />
+						<p style="text-align: left;">历史交易记录</p>
+						<!--<p style="margin-top: 100px;margin-bottom: 300px;">这是为了演示页面滚动，而增加的额外文字段落。</p>-->
+					</div>
+				</div>
+		
+				
+				<ul class="mui-table-view mui-table-view-striped mui-table-view-condensed" id="ul-position">
+
+				</ul>
+			
+			</div>
+		</div>
+		<script src="../js/mui.min.js">
+			
+		</script>
+		<script>
+			mui.init({
+				swipeBack: false,
+				pullRefresh: {
+					container: '#pullrefresh',
+					down: {
+						callback: pulldownRefresh
+					},
+					/*
+					up: {
+						contentrefresh: '正在加载...',
+						callback: pullupRefresh
+					}*/
+				}
+			});
+
+			document.getElementById("from").addEventListener('change',balance);
+			function balance(){
+				web3.eth.getBalance(             
+	                document.getElementById("from").value
+	            , function(err, result){
+	                if(!err){
+	                	mui("#balance")[0].innerHTML= "UST: "+web3.utils.fromWei(result,'ether');
+	                console.log((result));
+	                }
+	            });
+			}
+			function wallet_list(){
+				var wallet_list = plus.storage.getItem('wallet_list');
+				if(wallet_list == false) return;
+	
+				wallet_list = JSON.parse(wallet_list);
+//				 for(var i=0,l=wallet_list.length;i<l;i++){
+// 
+//	    				
+//	 			}
+				document.getElementById('from').innerHTML = "";
+				 for( var address in wallet_list){
+	    				document.getElementById('from').innerHTML += '<option value="'+address+'">'+wallet_list[address]+'</option>';
+	        			console.log('<option value="'+wallet_list[address]+'">'+wallet_list[address]+'</option>');		
+				 }
+			}
+			mui.plusReady(function() {
+				wallet_list()
+				 balance();
+				 //tx_list();
+			});
+			/**
+			 * 下拉刷新具体业务实现
+			 */
+			
+			function pulldownRefresh() {
+				setTimeout(function() {
+					var table = document.body.querySelector('.mui-table-view');
+					var cells = document.body.querySelectorAll('.mui-table-view-cell');
+					table.innerHTML='';
+
+					wallet_list();
+				
+					var tx_list = plus.storage.getItem('tx_list'+document.getElementById("from").value);
+					if(tx_list == null) { 
+						mui('#pullrefresh').pullRefresh().endPulldownToRefresh(true);
+						//return
+					}
+					tx_list = JSON.parse(tx_list);
+					 for(var i=tx_list.length-1;i>=0;i--){
+
+						var li = document.createElement('li');
+						li.className = 'mui-table-view-cell';
+						li.innerHTML = '<div class="mui-clearfix"> <h5 id="history"><span> '+tx_list[i].name+'</span></h5> </div> <p class="oa-contact-email mui-h6" id="getHistroyUSTAddress">'+tx_list[i].hash+' </p>';
+						//下拉刷新，新纪录插到最前面；
+						table.appendChild(li);	 
+		    				
+		 			}
+					 mui('#pullrefresh').pullRefresh().endPulldownToRefresh(true); //refresh completed
+				}, 1000);
+			}
+			
+			/**
+			 * 上拉加载具体业务实现
+			var count = 0;
+			function pullupRefresh() {
+				setTimeout(function() {
+					mui('#pullrefresh').pullRefresh().endPullupToRefresh((++count > 2)); //参数为true代表没有更多数据了。
+					var table = document.body.querySelector('.mui-table-view');
+					var cells = document.body.querySelectorAll('.mui-table-view-cell');
+					for (var i = cells.length, len = i + 20; i < len; i++) {
+						var li = document.createElement('li');
+						li.className = 'mui-table-view-cell';
+						li.innerHTML = '<a class="mui-navigate-right">Item ' + (i + 1) + '</a>';
+						table.appendChild(li);
+					}
+				}, 1000);
+			}
+			*/
+
+			function transferUST(){
+				console.log("transferust")
+				if(!web3._provider.connected){
+					mui.alert("无法连接到链", "警告") 
+					return false;
+				}
+			  	var fromaddr = document.getElementById("from").value;
+			  	var keystore = plus.storage.getItem("keystore_"+fromaddr);
+			  	var password = document.getElementById("unlock_pwd").value;
+			  	var name = document.getElementById("getComments").value;
+			  	var to = document.getElementById("getReceiveAddress").value;
+			  	var value=document.getElementById("getSendValue").value;
+			  	value = web3.utils.toWei(value,"ether")
+			  	
+			  	console.log("unlock_"+keystore+fromaddr+password)
+			  	if( plus.storage.getItem("unlock_"+fromaddr+password)){
+			  		wallet = Wallet.fromPrivateKey(Buffer.from(plus.storage.getItem("unlock_"+fromaddr+password), 'hex'));
+			  		console.log("privates"+wallet.getPrivateKeyString());
+			  	} else {
+				  	var wallet = Wallet.fromV3(keystore,password);
+				  	plus.storage.setItem("unlock_"+fromaddr+password,wallet.getPrivateKey().toString("hex"))
+				  	//console.log("unlock_"+fromaddr+password)
+				  	//console.log(plus.storage.getItem("unlock_"+fromaddr+password))
+				  	console.log(wallet.getPrivateKeyString());
+			  	}
+
+			  	//wallet =Wallet.fromPrivateKey(Buffer.from('6d9978f313eb599889959b44fdb196a971d3d297ced63acdee04528a953cd9c8', 'hex'));
+			  	data ={"to":to,"value":value,"name":name}
+			  	var serializedTx = signtx(wallet,data);
+			  	//console.log("serializedTx="+serializedTx.toString("hex"))
+			  	
+				
+			  	console.log("transferust end")
+				//alert(signtx(wallet))
+			}
+
+		function signtx(wallet,data){
+
+			web3.eth.getTransactionCount(wallet.getAddressString(),function(err, r) {
+			  	var nonce = web3.utils.toHex(r);
+				console.log("nonce="+nonce)
+				 
+				
+				var gasPrice = 0x25200
+				//= web3.eth.getGasPrice().then(function(p) {
+				//	gasPrice = web3.utils.toHex(p);
+				//});
+				console.log("nonce="+nonce)
+				console.log("gasPrice="+gasPrice)
+				//var gasLimit = web3.eth.estimateGas();
+				var gasLimit = web3.utils.toHex("150000");
+				
+				var to = web3.utils.toHex(data.to);
+				var value = web3.utils.toHex(data.value);
+				
+	            const txParams = {
+	                nonce: nonce,
+	                gasPrice: gasPrice, 
+	                gasLimit: gasLimit,
+	                to: to, 
+	                value: value, 
+	            }
+	            const tx = new Tx(txParams);            
+	            tx.sign(wallet.getPrivateKey())
+	            const serializedTx = '0x'+tx.serialize().toString('hex');
+	            console.log(serializedTx)
+	           	//发送交易
+				 web3.eth.sendSignedTransaction(serializedTx, function(err, hash) {
+				  	if (!err) {
+				     	console.log("交易hash:"+hash);
+				     	var tx_list = plus.storage.getItem('tx_list'+wallet.getAddressString());
+				     	console.log(tx_list)
+						if(tx_list == null){ 
+							tx_list=[];
+						}else{
+							tx_list = JSON.parse(tx_list);
+						}
+						
+						tx_list.push({"name":data.name,"hash":hash});
+						plus.storage.setItem("tx_list"+wallet.getAddressString(),JSON.stringify(tx_list));  
+				     	mui.alert("hash:"+hash,"交易成功 ",balance)
+				     	//balance();
+				     	return hash;
+				  	} else {
+				  		mui.alert(err,"交易失败")
+				      	//console.log(err);	
+				      	//return false;
+				  	}
+				});
+	            //return ;
+            });
+		} 
+		</script>
+	</body>
+
+</html>

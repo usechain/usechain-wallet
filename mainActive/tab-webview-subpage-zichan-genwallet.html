@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<script src="../js/mui.min.js"></script>
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<script src="../js/wallet-browser.js"></script>
+		<script src="../js/ethereum.js"></script>
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<style>
+			html,
+			body {
+				background-color: #FFFFFF;
+			}
+			
+			.title {
+				padding: 20px 15px 10px;
+				color: #6d6d72;
+				font-size: 15px;
+				background-color: #fff;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="pullrefresh" class="mui-content mui-scroll-wrapper">
+			<div class="mui-scroll">
+				<br />
+				<br />
+				<div>
+					<h4 style="text-align: center;color: #AAAAAA;">
+						UST 转账
+					</h4>
+				</div>
+
+				<form class="mui-input-group">
+					<br />
+					<div class="mui-input-row">
+						<label style="color: #AAAAAA;">名称</label>
+						<input type="text" class="mui-input-clear" id="name">
+					</div>
+					<div class="mui-input-row">
+						<label style="color: #AAAAAA;">证书</label>
+						<!--<input type="text" class="mui-input-clear" placeholder="" id="ecert">-->
+						<input type="file" id="cert">
+					</div>
+					<div class="mui-input-row">
+						<label style="color: #AAAAAA;">解锁密码</label>
+						<input type="text" class="mui-input-clear" placeholder="" id="password">
+					</div>
+
+				</form>
+
+				<br />
+				<div class="mui-content">
+					<div class="mui-content-paddeds">
+						<button type="button" class="mui-btn mui-btn-blue" onclick="creat()" id="create_wallet_bt">创建 </button>
+					</div>
+				</div>
+
+
+
+
+
+			</div>
+		</div>
+		<script src="../js/mui.min.js">
+		</script>
+		<script>
+			mui.init({
+				swipeBack: false,
+				beforeback:function(){
+
+					history.go(-1)
+					return false;//return false时不再执行后退逻辑
+				}
+			});
+
+
+
+			function creat() {
+				if(!web3._provider.connected){
+					mui.alert("无法连接到链", "警告") 
+					return false;
+				}
+				mui(mui("#create_wallet_bt")).button('loading')
+				var file=document.getElementById("cert").files[0];
+
+				var reader = new FileReader();//新建一个FileReader
+              	reader.readAsArrayBuffer(file);//读取文件 
+             	reader.onload = function(evt){ //读取完文件之后会回来这里
+                 	var buf = new Uint8Array(evt.target.result)
+            			var ecert = web3.utils.bytesToHex(buf)
+             		console.log(ecert)
+             		var name = mui("#name")[0].value
+					var password = mui("#password")[0].value
+					//var ecert = mui("#ecert")[0].value
+					console.log(mui("#password")[0].value)
+					var wallet = Wallet.generate(false);
+					//var wallet =  Wallet.fromPrivateKey(Buffer.from(plus.storage.getItem("unlock_0xc30b815f9668df008a034072999edaadb5f4325e123456"), 'hex'));
+					var keystore = wallet.toV3String(password, {
+						kdf: "scrypt",
+						n: 8192
+					});
+					
+					//存储钱包 
+					var wallet_list = plus.storage.getItem('wallet_list');
+					
+					if(wallet_list == false){ 
+						
+						wallet_list={};
+					}else{
+						wallet_list = JSON.parse(wallet_list);
+					}
+					wallet_list[wallet.getAddressString()]=name;
+					console.log(JSON.stringify(wallet_list))
+					plus.storage.setItem("wallet_list",JSON.stringify(wallet_list));  
+					plus.storage.setItem("keystore_"+wallet.getAddressString(),keystore);  
+					//存储钱包end
+					
+					verify(wallet,{"ecert":ecert})
+					//mui(mui("#create_wallet_bt")).button('reset')
+					//console.log(keystore)
+              	}
+
+				
+				
+
+
+			}
+			function verify(wallet,data){
+				console.log("verifystart")
+	           	var pub="0x04"+wallet.getPublicKey().toString("hex");
+	           	var cahost =	cfg.cahost;;
+	            
+	            var data = "pub=" + pub + "&cert="+data.ecert;   
+
+				console.log(cahost+"verify?"+data)
+            		mui.ajax(cahost+"verify",{
+				async:false ,
+				dataType:"json",
+				data:data,
+				success:function(data){
+					console.log(data.tcert);
+					if(data.error == 0){
+						console.log("msg="+data.msg)
+						initchain(wallet);
+					} else {
+						mui.alert(data.msg, "提示") 
+					}
+				},
+				error:function(xhr,type,errorThrown){
+					//异常处理；
+					mui.alert('服务器响应失败!', "提示") 
+				}
+			});
+            
+            }
+    //账号初始化
+    function initchain(wallet){
+    		console.log("initchain start")
+        var usthost = cfg.usthost;
+        var cahost = cfg.cahost;
+        //get tcert
+        var msg = EthUtil.rlphash("123456")//wallet.getAddressString()
+        var sig = Secp256k1.sign(msg, wallet.getPrivateKey());
+        var data=   "sig=0x"+sig.signature.toString("hex")+
+                    "&msg=0x"+msg.toString("hex")+
+                    "&addr=0x"+wallet.getAddress().toString("hex")+
+                    "&pub=0x04"+wallet.getPublicKey().toString("hex");
+        console.log(data)
+        
+        //$("#get_pub").val("0x04"+wallet.getPublicKey().toString("hex"))
+//        var ret = null
+        
+//      $.ajax({type: 'POST',url:cahost+"/tcert",async:false,data:data,success:function(result){
+//      if (result.error == 0){
+//          $("#getcert_result").html(result.tcert);
+//          ret = result
+//      } else {
+//          $("#getcert_result").html(result.msg);
+//      }
+		var ret = getcert(wallet);
+		
+
+        //sign
+
+            
+           var gasPrice = 0;
+           var gasLimit ="0xe57e0";
+
+           var to = "0xdB1534ef1af5f98A693a965D2F5EF068175496a3";
+           var value=0
+           var beitai = "0000000000000000000000000000000000000000000000000000000000000000";
+            var tcert = ret.tcert
+            var tag = ret.tag   
+			var lev = ret.lev
+            const privateKey = wallet.getPrivateKey()
+            
+            //var tag = 2;
+            //console.log('0x' + '74f54c37'+ beitai.substr(0,63)+ lev + beitai.substr(0,63) + tag + tcert);
+            ////////                                                              
+            //var web3 = new Web3();
+            //web3.setProvider(new web3.providers.HttpProvider(usthost));
+            /////////
+            var nonce =web3.eth.getTransactionCount(wallet.getAddressString(),'pending')
+             nonce = web3.utils.toHex(nonce)
+             console.log("nonce:"+nonce)
+             var tl = parseInt( (tcert.length)/2 )
+			 tl =tl.toString(16)
+            console.log(wallet.getPrivateKeyString())
+            var data = Buffer.from('74f54c37'+ beitai.substr(0,64-lev.toString().length)+ lev + beitai.substr(0,64-tag.toString().length) + tag +  beitai.substr(0,62) + "60"+ beitai.substr(0,64-tl.length)+ tl +tcert, 'hex') //+ beitai.substr(0,64-tcert.length%64)
+            console.log('74f54c37'+ beitai.substr(0,64-lev.toString().length)+ lev + beitai.substr(0,64-tag.toString().length) + tag +  beitai.substr(0,62) + "60"+ beitai.substr(0,64-tl.length)+ tl +tcert, 'hex') //+ beitai.substr(0,64-tcert.length%64)
+ 
+            var txParams = {
+                nonce: 0,
+                from:wallet.getAddress().toString("hex"),
+                gasPrice: gasPrice, 
+                gasLimit: gasLimit,
+                to: to, 
+                value: value, 
+                data: data,
+
+            }
+            var tx = new Tx(txParams)
+            tx.sign(privateKey)
+            var serializedTx = tx.serialize()
+
+			console.log("sendsingtransaction")
+            //send
+            web3.eth.sendSignedTransaction('0x'+ serializedTx.toString('hex'), function(err, hash) {
+                if (!err) {
+                    console.log("hash="+hash);
+                    mui.alert('创建成功!', "",function() {
+                    		history.go(-1)
+               		});
+
+					
+                } else {
+                    console.log(err,err.code)
+                   
+                }
+            }
+
+            );
+    	
+  
+
+
+    }
+/*
+    publickey
+    sig
+    addr
+    msg
+*/
+function getcert(wallet){
+	console.log("getcert start")
+			var addr = wallet.getAddress()
+			var pub = wallet.getPublicKey()
+			var pri = wallet.getPrivateKey()
+			var res = false;
+            var msg = EthUtil.rlphash("123456")//addr
+            var cahost = cfg.cahost;
+            var sig = Secp256k1.sign(msg, pri); 
+            var data=   "sig=0x"+sig.signature.toString("hex")+
+                        "&msg=0x"+msg.toString("hex")+
+                        "&addr=0x"+addr.toString("hex")+
+                        "&pub=0x04"+pub.toString("hex");
+            console.log(cahost+"/tcert?"+data)
+            //$("#get_pub").val("0x04"+pub.toString("hex"))
+			mui.ajax(cahost+"/tcert",{
+				async:false ,
+				dataType:"json", 
+				data:data,
+				success:function(data){
+					//console.log(data.tcert);
+					if(data.error == 0){
+						res = data;
+						console.log("tcert="+data.tcert)
+					} else {
+						mui.alert('请先注册认证!', "提示") 
+					}
+				},
+				error:function(xhr,type,errorThrown){
+					//异常处理；
+					//console.log(type);
+				}
+			});
+			return res;
+		}
+
+		</script>
+	</body>
+
+</html>
